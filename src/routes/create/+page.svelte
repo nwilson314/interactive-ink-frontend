@@ -1,43 +1,105 @@
 <script lang="ts">
-    let genres = ['Fantasy', 'Science Fiction', 'Mystery', 'Romance', 'Horror'];
-    let selectedGenre: string = '';
-    let storyLength: number = 500; // Update to enum
+    import {
+        Genre,
+        StoryLength,
+        type LengthOption,
+        genres,
+        lengthOptions
+    } from '$lib/types';
+    import { API_BASE_URL } from '$lib/config';
+
+    let selectedGenre: Genre | '' = '';
+    let selectedLengthOption: LengthOption = 'Medium'; // Default selection
+    let isLoading = false;
+    
   
-    function handleSubmit() {
-        // Do nothing for now
-        console.log('Genre:', selectedGenre);
-        console.log('Length:', storyLength);
+    async function handleSubmit() {
+        if (!selectedGenre) {
+            alert('Please select a genre.');
+            return;
+        }
+
+        isLoading = true;
+
+        const payload = {
+            genre: selectedGenre,
+            length: selectedLengthOption,
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/story/initiate`, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                genre: selectedGenre,
+                length: selectedLengthOption
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data);
+
+            // TODO: Handle the response (e.g., navigate to the story page)
+            alert('Story initiated successfully!');
+        } catch (error) {
+            console.error('Error initiating story:', error);
+            alert('An error occurred while initiating the story.');
+        } finally {
+            isLoading = false;
+        }
     }
   </script>
   
   <section class="max-w-xl mx-auto">
     <h2 class="text-3xl font-semibold mb-6 text-center">Customize Your Story</h2>
   
-    <div class="mb-4">
-      <label class="block text-lg mb-2">Choose a Genre:</label>
-      <select bind:value={selectedGenre} class="w-full p-3 border rounded">
+    <!-- Genre Selection -->
+    <div class="mb-6">
+        <label class="block text-lg mb-2">Choose a Genre:</label>
+        <select bind:value={selectedGenre} class="w-full p-3 border rounded">
         <option value="" disabled selected>Select a genre</option>
         {#each genres as genre}
-          <option value={genre}>{genre}</option>
+            <option value={genre}>{genre}</option>
         {/each}
-      </select>
+        </select>
     </div>
   
+    <!-- Length Selection -->
     <div class="mb-6">
-      <label class="block text-lg mb-2">Desired Story Length (words):</label>
-      <input
-        type="number"
-        bind:value={storyLength}
-        min="100"
-        class="w-full p-3 border rounded"
-      />
+        <label class="block text-lg mb-4">Desired Story Length:</label>
+        <div class="flex space-x-4">
+            {#each lengthOptions as option}
+            <label class="flex items-center">
+                <input
+                type="radio"
+                name="storyLength"
+                value={option}
+                bind:group={selectedLengthOption}
+                class="mr-2"
+                />
+                <span>{option}</span>
+            </label>
+            {/each}
+        </div>
     </div>
   
     <button
       on:click={handleSubmit}
       class="w-full bg-indigo-600 text-white p-3 rounded hover:bg-indigo-700 transition-colors"
+      disabled={isLoading}
     >
-      Generate My Story
+    {#if isLoading}
+        Generating...
+    {:else}
+        Generate My Story
+    {/if}
     </button>
   </section>
   
