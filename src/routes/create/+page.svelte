@@ -7,6 +7,8 @@
         lengthOptions
     } from '$lib/types';
     import { API_BASE_URL } from '$lib/config';
+    import { storyData, type StoryData } from '$lib/stores';
+    import { goto } from '$app/navigation';
 
     let selectedGenre: Genre | '' = '';
     let selectedLengthOption: LengthOption = 'Medium'; // Default selection
@@ -32,10 +34,7 @@
                 headers: {
                 'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                genre: selectedGenre,
-                length: selectedLengthOption
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -44,10 +43,9 @@
             }
 
             const data = await response.json();
-            console.log('API Response:', data);
+            storyData.set(data as StoryData);
 
-            // TODO: Handle the response (e.g., navigate to the story page)
-            alert('Story initiated successfully!');
+            goto('/story');
         } catch (error) {
             console.error('Error initiating story:', error);
             alert('An error occurred while initiating the story.');
