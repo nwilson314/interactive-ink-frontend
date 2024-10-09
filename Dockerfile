@@ -28,7 +28,9 @@ RUN npm ci --include=dev
 COPY . .
 
 # Build application
-RUN npm run build
+RUN --mount=type=secret,id=VITE_API_URL \
+    VITE_API_URL="$(cat /run/secrets/VITE_API_URL)" \
+    npm run build
 
 # Remove development dependencies
 RUN npm prune --omit=dev
@@ -44,4 +46,4 @@ COPY --from=build /app/package.json /app
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "node", "./build/index.js" ]
+CMD [ "npm", "run", "start" ]
