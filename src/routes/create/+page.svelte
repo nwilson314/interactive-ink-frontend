@@ -7,7 +7,7 @@
         lengthOptions
     } from '$lib/types';
     import { API_BASE_URL } from '$lib/config';
-    import { storyData, type StoryData } from '$lib/stores';
+    import { storyData, type Story } from '$lib/stores';
     import { goto } from '$app/navigation';
 
     let selectedGenre: Genre | '' = '';
@@ -43,7 +43,7 @@
             }
 
             const data = await response.json();
-            storyData.set(data as StoryData);
+            storyData.set(data as Story);
 
             goto('/story');
         } catch (error) {
