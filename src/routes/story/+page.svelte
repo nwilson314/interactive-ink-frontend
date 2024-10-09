@@ -1,68 +1,112 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { storyData, type Story, type StoryBlock } from '$lib/stores';
-  
-    let story: Story | null = null;
-  
-    onMount(() => {
-      const unsubscribe = storyData.subscribe((value) => {
-        story = value;
-      });
-  
-      if (!story) {
-        alert('No story data found. Please initiate a new story.');
-        window.location.href = '/create';
-      }
-  
-      return () => {
-        unsubscribe();
-      };
+  import { onMount } from "svelte";
+  import { storyData, type Story, type StoryBlock } from "$lib/stores";
+  import { API_BASE_URL } from "$lib/config";
+
+  let story: Story | null = null;
+
+  onMount(() => {
+    const unsubscribe = storyData.subscribe((value) => {
+      story = value;
     });
-  
-    function handleChoice(choice: string) {
-      // TODO: Implement choice handling logic
-      alert(`You selected: ${choice}`);
+
+    if (!story) {
+      alert("No story data found. Please initiate a new story.");
+      window.location.href = "/create";
     }
-  </script>
-  
-  <section class="max-w-2xl mx-auto">
-    {#if story}
-      <h2 class="text-3xl font-semibold mb-6 text-center">Your Story</h2>
-      <p class="text-gray-600 mb-4 text-center">
-        Genre: <strong>{story.genre}</strong> | Length: <strong>{story.length}</strong>
-      </p>
-  
-      <!-- Display the story blocks -->
-      {#each story.blocks as block}
-        <!-- Display the content of the segment -->
-        <p class="mb-4">{block.segment.content}</p>
-  
-        <!-- If the block has choices and no choice has been made yet -->
-        {#if block.segment.choices.length > 0 && !block.chosen}
-          <div class="mb-4">
-            <p class="font-semibold">What do you do next?</p>
-            <ul>
-              {#each block.segment.choices as choice}
-                <li>
-                  <button
-                    class="bg-indigo-600 text-white px-4 py-2 rounded mt-2"
-                    on:click={() => handleChoice(choice)}
-                  >
-                    {choice}
-                  </button>
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
-  
-        <!-- If a choice has been made, display it -->
-        {#if block.chosen}
-          <p class="mb-4"><em>You chose: {block.chosen}</em></p>
-        {/if}
-      {/each}
-    {:else}
-      <p>Loading story...</p>
+
+    return () => {
+      unsubscribe();
+    };
+  });
+
+  async function handleChoice(choice: string) {
+    if (!story) return;
+
+    const latestBlockIndex = story.blocks.findIndex((block) => !block.chosen);
+
+    if (latestBlockIndex === -1) {
+      alert("No choices available.");
+      return;
+    }
+    story.blocks[latestBlockIndex].chosen = choice;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/story/continue`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(story),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! Status: ${response.status} - ${errorText}`,
+        );
+      }
+
+      const updatedStory = await response.json();
+
+      // Update the storyData store with the new story
+      storyData.set(updatedStory as Story);
+    } catch (error) {
+      console.error("Error continuing story:", error);
+      alert(`An error occurred: ${error}`);
+    }
+  }
+
+  function getStoryLength(lengthOption: string): number {
+    const lengthMapping: Record<string, number> = {
+      Short: 3,
+      Medium: 7,
+      Long: 15,
+    };
+    return lengthMapping[lengthOption] || 7; // Default to 7 if not found
+  }
+</script>
+
+<section class="max-w-2xl mx-auto">
+  {#if story}
+    <h2 class="text-3xl font-semibold mb-6 text-center">Your Story</h2>
+    <p class="text-gray-600 mb-4 text-center">
+      Genre: <strong>{story.genre}</strong> | Length:
+      <strong>{story.length}</strong>
+    </p>
+
+    {#each story.blocks as block, index}
+      <!-- Display the content of the segment -->
+      <p class="mb-4">{block.segment.content}</p>
+
+      <!-- Display the choice made by the user -->
+      {#if block.chosen}
+        <p class="mb-4"><em>You chose: {block.chosen}</em></p>
+      {/if}
+
+      <!-- If the block has choices and no choice has been made yet, and it's the last block -->
+      {#if block.segment.choices.length > 0 && !block.chosen && index === story.blocks.length - 1}
+        <div class="mb-4">
+          <p class="font-semibold">What do you do next?</p>
+          <ul>
+            {#each block.segment.choices as choice}
+              <li>
+                <button
+                  class="bg-indigo-600 text-white px-4 py-2 rounded mt-2"
+                  on:click={() => handleChoice(choice)}
+                >
+                  {choice}
+                </button>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+    {/each}
+    {#if story.blocks.length >= getStoryLength(story.length)}
+      <p class="font-semibold text-center mt-6">The End</p>
     {/if}
-  </section>
-  
+  {:else}
+    <p>Loading story...</p>
+  {/if}
+</section>
