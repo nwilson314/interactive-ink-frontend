@@ -3,6 +3,8 @@ The frontend for Interactive Ink. Written in Typescript making use of SvelteKit.
 
 Backend code [here](https://github.com/nwilson314/interactive-ink).
 
+A running demo can be found here: https://interactive-ink.fly.dev/ (startup times may be slow initially).
+
 ## Running locally
 
 Install dependencies with `npm install`. Then, start a development server:
