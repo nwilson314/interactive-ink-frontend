@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { storyData, type Story, type StoryBlock } from "$lib/stores";
   import { API_BASE_URL } from "$lib/config";
 
   let story: Story | null = null;
   let isLoading = false;
+  let endOfMessages: HTMLDivElement;
 
   onMount(() => {
     const unsubscribe = storyData.subscribe((value) => {
@@ -59,6 +60,8 @@
       alert(`An error occurred: ${error}`);
     } finally{
       isLoading = false;
+      await tick();
+      endOfMessages.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
@@ -118,4 +121,5 @@
   {:else}
     <p>Loading story...</p>
   {/if}
+  <div bind:this={endOfMessages}></div>
 </section>
