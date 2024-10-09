@@ -4,6 +4,7 @@
   import { API_BASE_URL } from "$lib/config";
 
   let story: Story | null = null;
+  let isLoading = false;
 
   onMount(() => {
     const unsubscribe = storyData.subscribe((value) => {
@@ -29,7 +30,9 @@
       alert("No choices available.");
       return;
     }
+
     story.blocks[latestBlockIndex].chosen = choice;
+    isLoading = true;
 
     try {
       const response = await fetch(`${API_BASE_URL}/story/continue`, {
@@ -54,6 +57,8 @@
     } catch (error) {
       console.error("Error continuing story:", error);
       alert(`An error occurred: ${error}`);
+    } finally{
+      isLoading = false;
     }
   }
 
@@ -92,8 +97,9 @@
             {#each block.segment.choices as choice}
               <li>
                 <button
-                  class="bg-indigo-600 text-white px-4 py-2 rounded mt-2"
+                  class="bg-indigo-600 text-white px-4 py-2 rounded mt-2 disabled:opacity-50"
                   on:click={() => handleChoice(choice)}
+                  disabled={isLoading}
                 >
                   {choice}
                 </button>
@@ -103,8 +109,11 @@
         </div>
       {/if}
     {/each}
-    {#if story.blocks.length >= getStoryLength(story.length)}
+    {#if story.blocks.length > getStoryLength(story.length)}
       <p class="font-semibold text-center mt-6">The End</p>
+    {/if}
+    {#if isLoading}
+      <p class="text-center">Analyzing choice...</p>
     {/if}
   {:else}
     <p>Loading story...</p>
