@@ -84,12 +84,18 @@
     </p>
 
     {#each story.blocks as block, index}
-      <!-- Display the content of the segment -->
+      {#if block.block_image}
+        <img src="{block.block_image.url}" alt="{block.block_image.image_description}" class="mb-4 w-full h-auto object-cover" />
+      {/if}
       <p class="mb-4">{block.segment.content}</p>
 
       <!-- Display the choice made by the user -->
       {#if block.chosen}
-        <p class="mb-4"><em>You chose: {block.chosen}</em></p>
+        <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500">
+          <p class="text-lg font-semibold text-yellow-800">
+            You chose: <span class="italic">{block.chosen}</span>
+          </p>
+        </div>
       {/if}
 
       <!-- If the block has choices and no choice has been made yet, and it's the last block -->

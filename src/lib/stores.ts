@@ -7,11 +7,18 @@ export interface StorySegment {
   choices: string[];
 }
 
+export interface BlockImage {
+  url: string;
+  image_style: string;
+  image_description: string;
+}
+
 export interface StoryBlock {
   id_: string;
   segment: StorySegment;
   chosen?: string;
   block_template: string;
+  block_image?: BlockImage;
 }
 
 export interface Story {
