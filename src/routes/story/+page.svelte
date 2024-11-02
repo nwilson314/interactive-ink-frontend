@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { storyData, type Story, type StoryBlock } from "$lib/stores";
+  import { storyData } from "$lib/stores";
+  import { type Story } from "$lib/types";
   import { API_BASE_URL } from "$lib/config";
 
   let story: Story | null = null;
@@ -71,7 +72,7 @@
       Medium: 7,
       Long: 15,
     };
-    return lengthMapping[lengthOption] || 7; // Default to 7 if not found
+    return lengthMapping[lengthOption] || 7;
   }
 </script>
 
@@ -89,7 +90,6 @@
       {/if}
       <p class="mb-4">{block.segment.content}</p>
 
-      <!-- Display the choice made by the user -->
       {#if block.chosen}
         <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500">
           <p class="text-lg font-semibold text-yellow-800">

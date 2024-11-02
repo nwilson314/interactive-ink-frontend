@@ -1,32 +1,7 @@
 import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 import { browser } from "$app/environment";
-
-export interface StorySegment {
-  content: string;
-  choices: string[];
-}
-
-export interface BlockImage {
-  url: string;
-  image_style: string;
-  image_description: string;
-}
-
-export interface StoryBlock {
-  id_: string;
-  segment: StorySegment;
-  chosen?: string;
-  block_template: string;
-  block_image?: BlockImage;
-}
-
-export interface Story {
-  id_: string;
-  blocks: StoryBlock[];
-  genre: string;
-  length: string;
-}
+import type { Story } from "./types";
 
 function createPersistedStore<T>(key: string, initialValue: T): Writable<T> {
   let storedValue: T = initialValue;

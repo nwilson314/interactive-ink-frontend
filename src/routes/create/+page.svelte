@@ -1,17 +1,17 @@
 <script lang="ts">
   import {
     Genre,
-    StoryLength,
     type LengthOption,
     genres,
     lengthOptions,
   } from "$lib/types";
   import { API_BASE_URL } from "$lib/config";
-  import { storyData, type Story } from "$lib/stores";
+  import { type Story } from "$lib/types";
+  import { storyData } from "$lib/stores";
   import { goto } from "$app/navigation";
 
   let selectedGenre: Genre | "" = "";
-  let selectedLengthOption: LengthOption = "Medium"; // Default selection
+  let selectedLengthOption: LengthOption = "Medium";
   let isLoading = false;
 
   async function handleSubmit() {
